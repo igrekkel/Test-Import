@@ -4,7 +4,6 @@ import Tkinter as tk
 import RPi.GPIO as GPIO
 from time import sleep
 import threading
-import sys
 
 GPIO21 = 21
 GPIO20 = 20
@@ -66,36 +65,34 @@ def GPIO16button():
 		OFFlabel = tk.Label(master, text="Buzzer OFF", fg="red")
 		OFFlabel.grid(row=2, column=1)
 
-
 def Start():
-	e.set()
+	run.set()
 
 def Stop():
-	e.clear()
+	run.clear()
 	
 def Run():
-	while (1):
+	while loop.isSet():
 		if (GPIO16_State == True):	
 			if (GPIO.input(GPIO12) == True):
-				GPIO.output(GPIO16, 0)
+				GPIO.output(GPIO16, False)
 			else:
-				GPIO.output(GPIO16, 1)
+				GPIO.output(GPIO16, True)
 			
-		while e.isSet():
-			GPIO.output(GPIO20, 0)
-			GPIO.output(GPIO21, 1)
-			GPIO.output(GPIO16, 1)
-			sleep(0.1)		
-			GPIO.output(GPIO20, 1)
-			GPIO.output(GPIO21, 0)
-			GPIO.output(GPIO16, 0)
+		while run.isSet():
+			GPIO.output(GPIO20, False)
+			GPIO.output(GPIO21, True)
+			GPIO.output(GPIO16, True)
+			sleep(0.2)		
+			GPIO.output(GPIO20, True)
+			GPIO.output(GPIO21, False)
+			GPIO.output(GPIO16, False)
 			sleep(0.1)
 
 def Exit():
+	loop.clear()
 	GPIO.cleanup()
-	master.quit()
 	master.destroy()	
-	sys.exit()
 
 BlueLEDbutton = tk.Button(master, text="Blue", bg="blue", width=10, justify="left", command=GPIO21button)
 BlueLEDbutton.grid(row=0, column=0)
@@ -117,7 +114,10 @@ Exitbutton.grid(row=5, column=0)
 
 x = threading.Thread(target=Run)
 
-e = threading.Event()
+run = threading.Event()
+run.clear()
+loop = threading.Event()
+loop.set()
 
 x.start()
 
