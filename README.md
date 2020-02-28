@@ -1,11 +1,11 @@
-**Notes
+**Notes**
 
-##To do
+## To do
 
 Change event with global
 Add schematic
 
-##Done
+## Done
 
 Bug buzzer + button
 
