@@ -12,44 +12,45 @@ GPIO12 = 12
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
-GPIO.setup(GPIO21, GPIO.OUT)
-GPIO.setup(GPIO20, GPIO.OUT)
-GPIO.setup(GPIO16, GPIO.OUT)
-GPIO.setup(GPIO12, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+GPIO.setup(GPIO21, GPIO.OUT)                          # BLUE
+GPIO.setup(GPIO20, GPIO.OUT)                          # RED
+GPIO.setup(GPIO16, GPIO.OUT)                          # BUZZER
+GPIO.setup(GPIO12, GPIO.IN, pull_up_down=GPIO.PUD_UP) # BUTTON
 
 master = tk.Tk()
 master.title("GPIO Control")
 master.geometry("500x200")
 
-GPIO21_state = True
+GPIO21_State = True
 GPIO20_State = True
 GPIO16_State = False
 
 def GPIO21button():
-	global GPIO21_state
-	if GPIO21_state == True:
-		GPIO.output(GPIO21, GPIO21_state)
-		GPIO21_state = False
-		ONlabel = tk.Label(master, text="Turned ON", fg="green")
+	global GPIO21_State
+	if GPIO21_State == True:
+		GPIO21_State = False
+		GPIO.output(GPIO21, GPIO21_State)
+		ONlabel = tk.Label(master, text="Turned OFF", fg="green")
 		ONlabel.grid(row=0, column=1)
 	else:
-		GPIO.output(GPIO21, GPIO21_state)
-		GPIO21_state = True
-		ONlabel = tk.Label(master, text="Turned OFF", fg="red")
+		GPIO21_State = True
+		GPIO.output(GPIO21, GPIO21_State)
+		ONlabel = tk.Label(master, text="Turned ON", fg="red")
 		ONlabel.grid(row=0, column=1)
 
 
 def GPIO20button():
 	global GPIO20_State
 	if GPIO20_State == True:
-		GPIO.output(GPIO20, GPIO20_State)
 		GPIO20_State = False
-		OFFlabel = tk.Label(master, text="Turned ON", fg="green")
+		GPIO.output(GPIO20, GPIO20_State)
+		OFFlabel = tk.Label(master, text="Turned OFF", fg="green")
 		OFFlabel.grid(row=1, column=1)
 	else:
-		GPIO.output(GPIO20, GPIO20_State)
 		GPIO20_State = True
-		OFFlabel = tk.Label(master, text="Turned OFF", fg="red")
+		GPIO.output(GPIO20, GPIO20_State)
+		OFFlabel = tk.Label(master, text="Turned ON", fg="red")
 		OFFlabel.grid(row=1, column=1)
 
 def GPIO16button():
@@ -57,12 +58,12 @@ def GPIO16button():
 	if GPIO16_State == True:
 		GPIO.output(GPIO16, GPIO16_State)
 		GPIO16_State = False
-		OFFlabel = tk.Label(master, text="Buzzer ON", fg="green")
+		OFFlabel = tk.Label(master, text="Buzzer OFF", fg="green")
 		OFFlabel.grid(row=2, column=1)
 	else:
 		GPIO.output(GPIO16, GPIO16_State)
 		GPIO16_State = True
-		OFFlabel = tk.Label(master, text="Buzzer OFF", fg="red")
+		OFFlabel = tk.Label(master, text="Buzzer ON", fg="red")
 		OFFlabel.grid(row=2, column=1)
 
 def Start():
@@ -73,11 +74,10 @@ def Stop():
 	
 def Run():
 	while loop.isSet():
-		if (GPIO16_State == True):	
-			if (GPIO.input(GPIO12) == True):
-				GPIO.output(GPIO16, False)
-			else:
-				GPIO.output(GPIO16, True)
+		if ((GPIO.input(GPIO12) == True) & (not GPIO16_State)):
+			GPIO.output(GPIO16, False)
+		else:
+			GPIO.output(GPIO16, True)
 			
 		while run.isSet():
 			GPIO.output(GPIO20, False)
@@ -90,8 +90,10 @@ def Run():
 			sleep(0.1)
 
 def Exit():
+	GPIO.output(GPIO20, False)
+	GPIO.output(GPIO21, False)
+	GPIO.output(GPIO16, False)
 	loop.clear()
-	GPIO.cleanup()
 	master.destroy()	
 
 BlueLEDbutton = tk.Button(master, text="Blue", bg="blue", width=10, justify="left", command=GPIO21button)
@@ -112,6 +114,10 @@ Stopbutton.grid(row=4, column=0)
 Exitbutton = tk.Button(master, text="Exit",bg="white", width=10, justify="left", command=Exit)
 Exitbutton.grid(row=5, column=0)
 
+GPIO.output(GPIO20, GPIO20_State)
+GPIO.output(GPIO21, GPIO21_State)
+GPIO.output(GPIO16, GPIO16_State)
+
 x = threading.Thread(target=Run)
 
 run = threading.Event()
@@ -122,4 +128,5 @@ loop.set()
 x.start()
 
 master.mainloop()
+
 
