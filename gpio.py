@@ -1,3 +1,5 @@
+# GPIO Sample Code
+
 import Tkinter as tk
 import RPi.GPIO as GPIO
 from time import sleep
