@@ -2,8 +2,11 @@
 
 import Tkinter as tk
 import RPi.GPIO as GPIO
-from time import sleep
 import threading
+
+from time import sleep
+from random import seed
+from random import randint
 
 GPIO21 = 21
 GPIO20 = 20
@@ -20,60 +23,50 @@ GPIO.setup(GPIO12, GPIO.IN, pull_up_down=GPIO.PUD_UP) # BUTTON
 
 master = tk.Tk()
 master.title("GPIO Control")
-master.geometry("500x200")
+# master.geometry("500x200")
 
 GPIO21_State = True
 GPIO20_State = True
 GPIO16_State = False
 
-def GPIO21button():
+def OnBlueButton():
 	global GPIO21_State
 	if GPIO21_State == True:
 		GPIO21_State = False
 		GPIO.output(GPIO21, GPIO21_State)
-		ONlabel = tk.Label(master, text="Turned OFF", fg="green")
-		ONlabel.grid(row=0, column=1)
 	else:
 		GPIO21_State = True
 		GPIO.output(GPIO21, GPIO21_State)
-		ONlabel = tk.Label(master, text="Turned ON", fg="red")
-		ONlabel.grid(row=0, column=1)
 
 
-def GPIO20button():
+def OnRedButton():
 	global GPIO20_State
 	if GPIO20_State == True:
 		GPIO20_State = False
 		GPIO.output(GPIO20, GPIO20_State)
-		OFFlabel = tk.Label(master, text="Turned OFF", fg="green")
-		OFFlabel.grid(row=1, column=1)
 	else:
 		GPIO20_State = True
 		GPIO.output(GPIO20, GPIO20_State)
-		OFFlabel = tk.Label(master, text="Turned ON", fg="red")
-		OFFlabel.grid(row=1, column=1)
 
-def GPIO16button():
+def OnBuzzerButton():
 	global GPIO16_State
 	if GPIO16_State == True:
 		GPIO.output(GPIO16, GPIO16_State)
 		GPIO16_State = False
-		OFFlabel = tk.Label(master, text="Buzzer OFF", fg="green")
-		OFFlabel.grid(row=2, column=1)
 	else:
 		GPIO.output(GPIO16, GPIO16_State)
 		GPIO16_State = True
-		OFFlabel = tk.Label(master, text="Buzzer ON", fg="red")
-		OFFlabel.grid(row=2, column=1)
 
-def Start():
+def OnStartButton():
 	run.set()
 
-def Stop():
+def OnStopButton():
 	run.clear()
 	
-def Run():
+def DoBackgroundTask():
+	seed(1)
 	while loop.isSet():
+		sleep(0.1)
 		if ((GPIO.input(GPIO12) == True) & (not GPIO16_State)):
 			GPIO.output(GPIO16, False)
 		else:
@@ -83,49 +76,49 @@ def Run():
 			GPIO.output(GPIO20, False)
 			GPIO.output(GPIO21, True)
 			GPIO.output(GPIO16, True)
-			sleep(0.2)		
+			sleep(0.05)
 			GPIO.output(GPIO20, True)
 			GPIO.output(GPIO21, False)
 			GPIO.output(GPIO16, False)
-			sleep(0.1)
+			sleep(0.05)
 
-def Exit():
+def OnExitButton():
 	GPIO.output(GPIO20, False)
 	GPIO.output(GPIO21, False)
 	GPIO.output(GPIO16, False)
 	loop.clear()
 	master.destroy()	
 
-BlueLEDbutton = tk.Button(master, text="Blue", bg="blue", width=10, justify="left", command=GPIO21button)
-BlueLEDbutton.grid(row=0, column=0)
+BlueLEDButton = tk.Button(master, text="Blue", bg="blue", width=25, justify="left", command=OnBlueButton)
+BlueLEDButton.grid(row=0, column=0)
 
-RedLEDbutton = tk.Button(master, text="Red",bg="red", width=10, justify="left" , command=GPIO20button)
-RedLEDbutton.grid(row=1, column=0)
+RedLEDButton = tk.Button(master, text="Red",bg="red", width=25, justify="left" , command=OnRedButton)
+RedLEDButton.grid(row=1, column=0)
 
-Buzzerbutton = tk.Button(master, text="Buzzer",bg="yellow", width=10, justify="left" , command=GPIO16button)
-Buzzerbutton.grid(row=2, column=0)
+BuzzerButton = tk.Button(master, text="Buzzer",bg="yellow", width=25, justify="left" , command=OnBuzzerButton)
+BuzzerButton.grid(row=2, column=0)
 
-Startbutton = tk.Button(master, text="Start",bg="green", width=10, justify="left" , command=Start)
-Startbutton.grid(row=3, column=0)
+StartButton = tk.Button(master, text="Start",bg="green", width=25, justify="left" , command=OnStartButton)
+StartButton.grid(row=3, column=0)
 
-Stopbutton = tk.Button(master, text="Stop",bg="red", width=10, justify="left" , command=Stop)
-Stopbutton.grid(row=4, column=0)
+StopButton = tk.Button(master, text="Stop",bg="red", width=25, justify="left" , command=OnStopButton)
+StopButton.grid(row=4, column=0)
 
-Exitbutton = tk.Button(master, text="Exit",bg="white", width=10, justify="left", command=Exit)
-Exitbutton.grid(row=5, column=0)
+ExitButton = tk.Button(master, text="Exit",bg="white", width=25, justify="left", command=OnExitButton)
+ExitButton.grid(row=5, column=0)
 
 GPIO.output(GPIO20, GPIO20_State)
 GPIO.output(GPIO21, GPIO21_State)
 GPIO.output(GPIO16, GPIO16_State)
 
-x = threading.Thread(target=Run)
+BackgroundTask = threading.Thread(target=DoBackgroundTask)
 
 run = threading.Event()
 run.clear()
 loop = threading.Event()
 loop.set()
 
-x.start()
+BackgroundTask.start()
 
 master.mainloop()
 
